@@ -31,9 +31,15 @@ namespace Bot_Application.Util
                             newMember => (newMember.Id != activity.Recipient.Id) ? $"{newMember.Name} (Id: {newMember.Id})"
                                             : $"{activity.Recipient.Name} (Id: {activity.Recipient.Id})"));
 
-                    string str = "to PS Tender Tool HelpDesk." + "\n" + "We can help you with the following details" + Environment.NewLine + "1.Get Stage of Tender Id" + Environment.NewLine + "2.Get Current owner of the Tender Id" + Environment.NewLine + "3.Get Current owner of the Tender Id" + Environment.NewLine + "4.Get announcement Date for Tender Id" + Environment.NewLine + "5.Get Details of Tender Id" + Environment.NewLine + "6.Get List of Tenders announced Last week";
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    sb.Append("Welcome to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");                    
+                    sb.Append(String.Format("1. Get Stage of Tender Id \n\n"));
+                    sb.Append(String.Format("2. Get Current owner of the Tender Id \n\n"));                    
+                    sb.Append(String.Format("3. Get announcement Date for Tender Id \n\n"));
+                    sb.Append(String.Format("4. Get Details of Tender Id \n\n"));
+                    sb.Append(String.Format("5. Get List of Tenders announced Last week \n\n"));                    
 
-                await context.PostAsync($"Welcome {membersAdded}" + str);
+                    await context.PostAsync(sb.ToString());
                     
                 }
             }
