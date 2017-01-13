@@ -29,17 +29,25 @@ namespace Bot_Application
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            if(activity.Type == ActivityTypes.ConversationUpdate)
+            if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 await Conversation.SendAsync(activity, () => new GetConversationMembersDialog());
             }
 
             if (activity.Type == ActivityTypes.Message)
             {
-                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));                
-                
+                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+
                 string result = string.Empty;
-                
+
+                //Specific to SKYPE
+                if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
+                {
+                    Activity welcomereply = activity.CreateReply(GetWelcomeMessage());
+                    await connector.Conversations.ReplyToActivityAsync(welcomereply);
+                }
+                else
+                { 
                 TenderLUIS tenderLUIS = await GetEntityFromLUIS(activity.Text);
                 if (tenderLUIS.intents.Count() > 0)
                 {
@@ -108,6 +116,7 @@ namespace Bot_Application
                 Activity reply = activity.CreateReply(result);
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
+        }
             else
             {
                 HandleSystemMessage(activity);
@@ -174,6 +183,19 @@ namespace Bot_Application
             isNumeric = int.TryParse(entity, out tenderId);
 
             return isNumeric;
+        }
+
+        private string GetWelcomeMessage()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.Append("Welcome to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");
+            sb.Append(String.Format("1. Get Stage of Tender Id \n\n"));
+            sb.Append(String.Format("2. Get Current owner of the Tender Id \n\n"));
+            sb.Append(String.Format("3. Get announcement Date for Tender Id \n\n"));
+            sb.Append(String.Format("4. Get Details of Tender Id \n\n"));
+            sb.Append(String.Format("5. Get List of Tenders announced Last week \n\n"));
+
+            return sb.ToString();
         }
     }
 }
