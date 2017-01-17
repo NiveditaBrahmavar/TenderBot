@@ -29,10 +29,10 @@ namespace Bot_Application
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            if (activity.Type == ActivityTypes.ConversationUpdate)
-            {
-                await Conversation.SendAsync(activity, () => new GetConversationMembersDialog());
-            }
+            //if (activity.Type == ActivityTypes.ConversationUpdate)
+            //{
+            //    await Conversation.SendAsync(activity, () => new GetConversationMembersDialog());
+            //}
 
             if (activity.Type == ActivityTypes.Message)
             {
@@ -43,7 +43,11 @@ namespace Bot_Application
                 //Specific to SKYPE
                 if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
                 {
-                    Activity welcomereply = activity.CreateReply(GetWelcomeMessage());
+                    string membersAdded = string.Empty;                    
+                    
+                    membersAdded = activity.From.Name.ToString();
+
+                    Activity welcomereply = activity.CreateReply(GetWelcomeMessage(membersAdded));
                     await connector.Conversations.ReplyToActivityAsync(welcomereply);
                 }
                 else
@@ -183,12 +187,12 @@ namespace Bot_Application
             isNumeric = int.TryParse(entity, out tenderId);
 
             return isNumeric;
-        }
+        }  
 
-        private string GetWelcomeMessage()
+        private string GetWelcomeMessage(string members)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.Append("Welcome to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");
+            sb.Append("Welcome " + members  + " to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");
             sb.Append(String.Format("1. Get Stage of Tender Id \n\n"));
             sb.Append(String.Format("2. Get Current owner of the Tender Id \n\n"));
             sb.Append(String.Format("3. Get announcement Date for Tender Id \n\n"));
