@@ -11,29 +11,26 @@ using Bot_Application.Model;
 using System.Configuration;
 using Microsoft.Bot.Builder.Dialogs;
 using Bot_Application.Util;
+using Microsoft.Lync.Model;
 
 namespace Bot_Application
 {
     [BotAuthentication]
     public class MessagesController : ApiController
     {
-        private readonly ITenderBot tenderBot;
+        private readonly ITenderBot tenderBot;        
 
         public MessagesController()
         {
             tenderBot = new TenderBot();
         }
+
         /// <summary>
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
-        {
-            //if (activity.Type == ActivityTypes.ConversationUpdate)
-            //{
-            //    await Conversation.SendAsync(activity, () => new GetConversationMembersDialog());
-            //}
-
+        {           
             if (activity.Type == ActivityTypes.Message)
             {
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
@@ -43,84 +40,88 @@ namespace Bot_Application
                 //Specific to SKYPE
                 if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
                 {
-                    string membersAdded = string.Empty;                    
-                    
+                    string membersAdded = string.Empty;
+
                     membersAdded = activity.From.Name.ToString();
 
                     Activity welcomereply = activity.CreateReply(GetWelcomeMessage(membersAdded));
                     await connector.Conversations.ReplyToActivityAsync(welcomereply);
                 }
                 else
-                { 
-                TenderLUIS tenderLUIS = await GetEntityFromLUIS(activity.Text);
-                if (tenderLUIS.intents.Count() > 0)
                 {
-                    switch (tenderLUIS.intents[0].intent)
+                    TenderLUIS tenderLUIS = await GetEntityFromLUIS(activity.Text);
+                    if (tenderLUIS.intents.Count() > 0)
                     {
-                        case "TenderStatus":
-                            if (tenderLUIS.entities.Count() > 0)
-                            {
-                                if (CheckEntity(tenderLUIS.entities[0].entity))
+                        switch (tenderLUIS.intents[0].intent)
+                        {
+                            case "TenderStage":
+                                if (tenderLUIS.entities.Count() > 0)
                                 {
-                                    result = tenderBot.FetchTenderStatus(Convert.ToInt32(tenderLUIS.entities[0].entity));
+                                    if (tenderLUIS.entities.Any(x => x.entity.Any(char.IsDigit)))
+                                    {
+                                        string s = tenderLUIS.entities.First(x => x.entity.Any(char.IsDigit)).entity;
+                                        result = tenderBot.FetchTenderStatus(Convert.ToInt32(s));
+                                    }
                                 }
-                            }
-                            else
-                                result = Constants.INCORRECT_MSG;
-                            break;
-                        case "CurrentOwner":
-                            if (tenderLUIS.entities.Count() > 0)
-                            {
-                                if (CheckEntity(tenderLUIS.entities[0].entity))
+                                else
+                                    result = Constants.INCORRECT_MSG;
+                                break;
+                            case "CurrentOwner":
+                                if (tenderLUIS.entities.Count() > 0)
                                 {
-                                    result = tenderBot.FetchCurrentOwner(Convert.ToInt32(tenderLUIS.entities[0].entity));
+                                    if (tenderLUIS.entities.Any(x => x.entity.Any(char.IsDigit)))
+                                    {
+                                        string owner = tenderLUIS.entities.First(x => x.entity.Any(char.IsDigit)).entity;
+                                        result = tenderBot.FetchCurrentOwner(Convert.ToInt32(owner));
+                                    }
                                 }
-                            }
-                            else
-                                result = Constants.INCORRECT_MSG;
-                            break;
-                        case "TenderAnnouncementDate":
-                            if (tenderLUIS.entities.Count() > 0)
-                            {
-                                if (CheckEntity(tenderLUIS.entities[0].entity))
+                                else
+                                    result = Constants.INCORRECT_MSG;
+                                break;
+                            case "TenderAnnouncementDate":
+                                if (tenderLUIS.entities.Count() > 0)
                                 {
-                                    result = tenderBot.FetchAnnouncementDate(Convert.ToInt32(tenderLUIS.entities[0].entity));
+                                    if (tenderLUIS.entities.Any(x => x.entity.Any(char.IsDigit)))
+                                    {
+                                        string date = tenderLUIS.entities.First(x => x.entity.Any(char.IsDigit)).entity;
+                                        result = tenderBot.FetchAnnouncementDate(Convert.ToInt32(date));
+                                    }
                                 }
-                            }
-                            else
-                                result = Constants.INCORRECT_MSG;
-                            break;
-                        case "TenderDetails":
-                            if (tenderLUIS.entities.Count() > 0)
-                            {
-                                if (CheckEntity(tenderLUIS.entities[0].entity))
+                                else
+                                    result = Constants.INCORRECT_MSG;
+                                break;
+                            case "TenderDetails":
+                                if (tenderLUIS.entities.Count() > 0)
                                 {
-                                    result = tenderBot.FetchTenderDetails(Convert.ToInt32(tenderLUIS.entities[0].entity));
+                                    if (tenderLUIS.entities.Any(x => x.entity.Any(char.IsDigit)))
+                                    {
+                                        string details = tenderLUIS.entities.First(x => x.entity.Any(char.IsDigit)).entity;
+                                        result = tenderBot.FetchTenderDetails(Convert.ToInt32(details));
+                                    }
                                 }
-                            }
-                            else
-                                result = Constants.INCORRECT_MSG;
-                            break;
-                        case "TenderListPrevWeek":
-                            result = tenderBot.FetchPreviousTenders();
-                            if (string.IsNullOrEmpty(result))
-                                result = "No tenders announced last week.";
-                            break;
-                        default:
-                            result = Constants.INVALID_MSG;
-                            break;
+                                else
+                                    result = Constants.INCORRECT_MSG;
+                                break;
+                            case "TenderListPrevWeek":
+                                result = tenderBot.FetchPreviousTenders();
+                                if (string.IsNullOrEmpty(result))
+                                    result = "No tenders announced last week.";
+                                break;
+                            default:
+                                result = Constants.INVALID_MSG;
+                                break;
+                        }
                     }
-                }
-                else
-                {
-                    result = Constants.INVALID_MSG;
-                }
+                    else
+                    {
+                        result = Constants.INVALID_MSG;
+                    }
 
-                // return our reply to the user
-                Activity reply = activity.CreateReply(result);
-                await connector.Conversations.ReplyToActivityAsync(reply);
+                    // return our reply to the user
+                    Activity reply = activity.CreateReply(result);
+                    await connector.Conversations.ReplyToActivityAsync(reply);
+                }
             }
-        }
             else
             {
                 HandleSystemMessage(activity);
@@ -192,11 +193,11 @@ namespace Bot_Application
         private string GetWelcomeMessage(string members)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.Append("Welcome " + members  + " to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");
-            sb.Append(String.Format("1. Get Stage of Tender Id \n\n"));
-            sb.Append(String.Format("2. Get Current owner of the Tender Id \n\n"));
-            sb.Append(String.Format("3. Get announcement Date for Tender Id \n\n"));
-            sb.Append(String.Format("4. Get Details of Tender Id \n\n"));
+            sb.Append("Welcome " + members + " to PS Tender Tool HelpDesk..\n\n We can help you with the following details \n\n");
+            sb.Append(String.Format("1. Get Stage of Tender \n\n"));
+            sb.Append(String.Format("2. Get Current owner of Tender\n\n"));
+            sb.Append(String.Format("3. Get announcement Date for Tender \n\n"));
+            sb.Append(String.Format("4. Get Details of Tender \n\n"));
             sb.Append(String.Format("5. Get List of Tenders announced Last week \n\n"));
 
             return sb.ToString();
