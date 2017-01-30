@@ -322,13 +322,13 @@ namespace Bot_Application
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
 
                 string result = string.Empty;
-
-                //var stateClient = new StateClient(new Uri(activity.ServiceUrl));
-                //BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
+                
+                StateClient stateClient = activity.GetStateClient();
+                BotData userData = stateClient.BotState.GetPrivateConversationData(
+                    activity.ChannelId, activity.Conversation.Id, activity.From.Id);
 
                 if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
                 {
-
                     Activity replyToConversation = activity.CreateReply(Constants.ADDED_MSG);
                     replyToConversation.Recipient = activity.From;
                     replyToConversation.Type = "message";
@@ -350,17 +350,17 @@ namespace Bot_Application
                     Activity examplereply = activity.CreateReply(Constants.EXAMPLE_MSG);
                     await connector.Conversations.ReplyToActivityAsync(examplereply);
                 }
-                //else if (activity.Text.ToLower() == "issue")
-                //{
-                //    userData.SetProperty<bool>("IssueTicket", true);
-                //    await stateClient.BotState.SetUserDataAsync(activity.ChannelId, activity.From.Id, userData);
-                //    await Conversation.SendAsync(activity, () => new MainDialog());
-                //}
-                //else if (userData.GetProperty<bool>("IssueTicket"))
-                //{
-                //    await Conversation.SendAsync(activity, () => new MainDialog());
-                //    BotData conversationData = stateClient.BotState.GetPrivateConversationData(activity.ChannelId, activity.Conversation.Id, activity.From.Id);
-                //}
+                else if (activity.Text.ToLower() == "issue")
+                {
+                    userData.SetProperty<bool>("IssueTicket", true);                    
+                    stateClient.BotState.SetPrivateConversationData(
+               activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    await Conversation.SendAsync(activity, () => new MainDialog());
+                }
+                else if (userData.GetProperty<bool>("IssueTicket"))
+                {
+                    await Conversation.SendAsync(activity, () => new MainDialog());                    
+                }
                 else
                 {
                     TenderLUIS tenderLUIS = await GetEntityFromLUIS(activity.Text);
