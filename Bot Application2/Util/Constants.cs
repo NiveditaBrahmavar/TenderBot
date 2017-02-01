@@ -19,6 +19,7 @@ namespace Bot_Application.Util
 
         public const string EXAMPLE_MSG = "For instance, you can say: Get Stage of 999 or Get Details of Tender 999. Then you get results like those.";
 
+        public const string QUIT_MSG = "We can help you with the following options.";
 
 
     }

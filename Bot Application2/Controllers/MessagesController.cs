@@ -322,10 +322,12 @@ namespace Bot_Application
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
 
                 string result = string.Empty;
-                
+
                 StateClient stateClient = activity.GetStateClient();
                 BotData userData = stateClient.BotState.GetPrivateConversationData(
                     activity.ChannelId, activity.Conversation.Id, activity.From.Id);
+                //var stateClient = new StateClient(new Uri(activity.ServiceUrl));
+                //BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
 
                 if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
                 {
@@ -350,17 +352,31 @@ namespace Bot_Application
                     Activity examplereply = activity.CreateReply(Constants.EXAMPLE_MSG);
                     await connector.Conversations.ReplyToActivityAsync(examplereply);
                 }
-                else if (activity.Text.ToLower() == "issue")
+                else if (activity.Text.ToLower() == "issue" || userData.GetProperty<bool>("IssueTicket"))
                 {
-                    userData.SetProperty<bool>("IssueTicket", true);                    
-                    stateClient.BotState.SetPrivateConversationData(
-               activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
-                    await Conversation.SendAsync(activity, () => new MainDialog());
-                }
-                else if (userData.GetProperty<bool>("IssueTicket"))
-                {
-                    await Conversation.SendAsync(activity, () => new MainDialog());                    
-                }
+                    if (activity.Text.ToLower() == "quit" || activity.Text.ToLower() == "reset" || activity.Text.ToLower() == "help")
+                    {
+                        userData.SetProperty<bool>("IssueTicket", false);
+                        stateClient.BotState.SetPrivateConversationData(
+                   activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    }
+                    else
+                    {
+                        userData.SetProperty<bool>("IssueTicket", true);
+                        stateClient.BotState.SetPrivateConversationData(
+                        activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    }
+
+                    if (activity.Text.ToLower() == "quit")
+                    {
+                        Activity quitreply = quitMessage(activity);
+                        await connector.Conversations.ReplyToActivityAsync(quitreply);
+
+                    }
+                    //await stateClient.BotState.SetUserDataAsync(activity.ChannelId, activity.From.Id, userData);
+                    //await Conversation.SendAsync(activity, () => new MainDialog());
+                        await Conversation.SendAsync(activity, MakeRoot);
+                }               
                 else
                 {
                     TenderLUIS tenderLUIS = await GetEntityFromLUIS(activity.Text);
@@ -570,6 +586,20 @@ namespace Bot_Application
             replyActivity.Attachments.Add(plAttachment);
             return replyActivity;
         }
+
+        private Activity quitMessage(Activity activity)
+        {
+            Activity replyToConversation = activity.CreateReply(Constants.QUIT_MSG);
+            replyToConversation.Recipient = activity.From;
+            replyToConversation.Type = "message";
+            replyToConversation.Attachments = new List<Attachment>();
+
+            HeroCard plCard = ShowWelcomeButtons();
+            Attachment plAttachment = plCard.ToAttachment();
+            replyToConversation.Attachments.Add(plAttachment);
+            return replyToConversation;            
+        }
+
 
         internal static IDialog<IssueModel> MakeRoot()
         {

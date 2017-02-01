@@ -25,7 +25,10 @@ namespace Bot_Application2.Util
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument;
-            context.Call(IssueModel.BuildFormDialog(FormOptions.PromptInStart), FormComplete);
+            await context.PostAsync("That's great. You will need to provide few details about yourself before giving feedback.");
+            //context.Call(IssueModel.BuildFormDialog(FormOptions.PromptInStart), FormComplete);            
+            var feedbackForm = new FormDialog<IssueModel>(new IssueModel(), IssueModel.BuildForm, FormOptions.PromptInStart);
+            context.Call(feedbackForm, FormComplete);
         }
         private async Task FormComplete(IDialogContext context, IAwaitable<IssueModel> result)
         {

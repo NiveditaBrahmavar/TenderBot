@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Bot.Builder.FormFlow;
 using System.Linq;
 using System.Web;
+using System.Threading.Tasks;
 
 namespace Bot_Application2.Model
 {
@@ -23,10 +24,12 @@ namespace Bot_Application2.Model
         {
             return new FormBuilder<IssueModel>()
                     .Message("OK, so you want to submit an issue? No problem, just need a few details from you.")
+                    .Message("Type quit if you do not want to submit an issue and get the main menu.")
                     .Field(nameof(IssueName))
                     .Field(nameof(IssueDescription))
                     .Field(nameof(AssignedTo))
-                    .Confirm("Great. I have the following details and I am ready to submit your message. \r\r Name: {IssueName}\r\rDescription: {IssueDescription}\r\r Ticket is assigned to: {AssignedTo} \r\rIs that all correct ?")
+                    .Message("Great. I have the following details and I am ready to submit your message. \r\r Name: {IssueName}\r\rDescription: {IssueDescription}\r\r Ticket is assigned to: {AssignedTo} \r\rIs that all correct \r\r?")
+                    .Confirm("Type Yes to submit or \r\r quit (to exit) or \r\r reset (issue form from beginning) \r\r How do you want to proceed \r\r?")
                     //.OnCompletion(ContactMessageSubmitted)
                     .Message("Thank you, I have submitted your message.")
                     .Build();
@@ -41,5 +44,26 @@ namespace Bot_Application2.Model
         {
             return FormDialog.FromForm(BuildForm, options);
         }
+
+        private static Task<ValidateResult> ValidateTicketInformation(IssueModel state, object response)
+        {
+            var result = new ValidateResult();
+            string contactInfo = string.Empty;
+            if (string.IsNullOrEmpty((string)response))
+            {
+                result.IsValid = true;
+                result.Value = (string)response;
+            }
+            else
+            {
+                result.IsValid = false;
+                result.Feedback = "You did not enter valid text";
+            }
+            return Task.FromResult(result);
+        }
+
+        private static bool FeedbackEnabled(IssueModel state) =>
+        !string.IsNullOrWhiteSpace(state.IssueName);
+        //&& !string.IsNullOrWhiteSpace(state.IssueDescription)
     }
 }
