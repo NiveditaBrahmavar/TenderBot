@@ -4,6 +4,7 @@ using Microsoft.Bot.Builder.FormFlow;
 using System.Linq;
 using System.Web;
 using System.Threading.Tasks;
+using Microsoft.Bot.Builder.Dialogs;
 
 namespace Bot_Application2.Model
 {
@@ -29,10 +30,12 @@ namespace Bot_Application2.Model
                     .Field(nameof(IssueDescription))
                     .Field(nameof(AssignedTo))
                     .Message("Great. I have the following details and I am ready to submit your message. \r\r Name: {IssueName}\r\rDescription: {IssueDescription}\r\r Ticket is assigned to: {AssignedTo} \r\rIs that all correct \r\r?")
-                    .Confirm("Type Yes to submit or \r\r quit (to exit) or \r\r reset (issue form from beginning) \r\r How do you want to proceed \r\r?")
+                    .Confirm("Type yes to submit or \r\r quit (to exit) or \r\r reset (issue form from beginning) \r\r How do you want to proceed \r\r?")                    
+                    .Message("Thank you, I have submitted your message. Type \"MainMenu\" to start all over again.")
                     //.OnCompletion(ContactMessageSubmitted)
-                    .Message("Thank you, I have submitted your message.")
                     .Build();
+
+            
         }
 
         /// <summary>
@@ -64,6 +67,8 @@ namespace Bot_Application2.Model
 
         private static bool FeedbackEnabled(IssueModel state) =>
         !string.IsNullOrWhiteSpace(state.IssueName);
-        //&& !string.IsNullOrWhiteSpace(state.IssueDescription)
+
+               
+       
     }
 }

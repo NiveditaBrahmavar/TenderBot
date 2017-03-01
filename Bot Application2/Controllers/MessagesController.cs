@@ -326,8 +326,7 @@ namespace Bot_Application
                 StateClient stateClient = activity.GetStateClient();
                 BotData userData = stateClient.BotState.GetPrivateConversationData(
                     activity.ChannelId, activity.Conversation.Id, activity.From.Id);
-                //var stateClient = new StateClient(new Uri(activity.ServiceUrl));
-                //BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
+              
 
                 if (activity.Text.ToLower() == "hi" || activity.Text.ToLower() == "hello")
                 {
@@ -352,6 +351,14 @@ namespace Bot_Application
                     Activity examplereply = activity.CreateReply(Constants.EXAMPLE_MSG);
                     await connector.Conversations.ReplyToActivityAsync(examplereply);
                 }
+                else if (activity.Text.ToLower() == "mainmenu")
+                {
+                    userData.SetProperty<bool>("IssueTicket", false);
+                    stateClient.BotState.SetPrivateConversationData(
+               activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    Activity quitreply = quitMessage(activity);
+                    await connector.Conversations.ReplyToActivityAsync(quitreply);
+                }
                 else if (activity.Text.ToLower() == "issue" || userData.GetProperty<bool>("IssueTicket"))
                 {
                     if (activity.Text.ToLower() == "quit" || activity.Text.ToLower() == "reset" || activity.Text.ToLower() == "help")
@@ -375,7 +382,50 @@ namespace Bot_Application
                     }
                     //await stateClient.BotState.SetUserDataAsync(activity.ChannelId, activity.From.Id, userData);
                     //await Conversation.SendAsync(activity, () => new MainDialog());
-                        await Conversation.SendAsync(activity, MakeRoot);
+                    
+                    await Conversation.SendAsync(activity, MakeRoot);                      
+                        
+                        
+                }
+                else if(activity.Text.ToLower() == "report" || userData.GetProperty<bool>("ReportDetails"))
+                {
+                    //string alias = User.Identity.Name.Substring(0, User.Identity.Name.IndexOf("@"));
+
+                    if (activity.Text.ToLower() == "quit" || activity.Text.ToLower() == "reset" || activity.Text.ToLower() == "help")
+                    {
+                        userData.SetProperty<bool>("ReportDetails", false);
+                        stateClient.BotState.SetPrivateConversationData(
+                   activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    }
+                    else
+                    {
+                        userData.SetProperty<bool>("ReportDetails", true);
+                        stateClient.BotState.SetPrivateConversationData(
+                        activity.ChannelId, activity.Conversation.Id, activity.From.Id, userData);
+                    }
+
+                    if (activity.Text.ToLower() == "quit")
+                    {
+                        Activity quitreply = quitMessage(activity);
+                        await connector.Conversations.ReplyToActivityAsync(quitreply);
+
+                    }                  
+                    await Conversation.SendAsync(activity, MakeReportRoot);
+
+                    //Activity quitreply = quitMessage(activity);
+                    //await connector.Conversations.ReplyToActivityAsync(quitreply);
+                    //bool issuccess = tenderBot.ExportReportExcel(alias);
+                    //if (issuccess)
+                    //{
+                    //    result = "Mail Sent Successfully!";
+                    //}
+                    //else
+                    //{
+                    //    result = "Mail Could not be Sent, some issue!";
+                    //}
+                    //Activity reply = activity.CreateReply(result);
+                    //await connector.Conversations.ReplyToActivityAsync(reply);
+
                 }               
                 else
                 {
@@ -549,6 +599,13 @@ namespace Bot_Application
                 Title = "Get PS Tender Details"
             };
             cardButtons.Add(detailsButton);
+            CardAction ReportButton = new CardAction()
+            {
+                Value = "report",
+                Type = "postBack",
+                Title = "Generate Tender Report"
+            };
+            cardButtons.Add(ReportButton);
             HeroCard plCard = new HeroCard()
             {
                 Title = "What would you like to do?",
@@ -604,6 +661,12 @@ namespace Bot_Application
         internal static IDialog<IssueModel> MakeRoot()
         {
             return Chain.From(() => FormDialog.FromForm(IssueModel.BuildForm));
+        
+        }
+
+        internal static IDialog<TenderReportModel> MakeReportRoot()
+        {
+            return Chain.From(() => FormDialog.FromForm(TenderReportModel.BuildForm));            
         }
     }
 }

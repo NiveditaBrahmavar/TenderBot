@@ -21,6 +21,7 @@ namespace Bot_Application.Util
 
         public const string QUIT_MSG = "We can help you with the following options.";
 
+        public const string TENDERDETAILS_REPORT = "[PST].[usp_GetTenderDetails]";
 
     }
 

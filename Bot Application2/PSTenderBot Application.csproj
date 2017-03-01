@@ -184,12 +184,15 @@
     </Compile>
     <Compile Include="Model\IssueModel.cs" />
     <Compile Include="Model\TenderLUIS.cs" />
+    <Compile Include="Model\TenderModel.cs" />
+    <Compile Include="Model\TenderReportModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\Constants.cs" />
     <Compile Include="Util\GetConversationMembersDialog.cs" />
     <Compile Include="Util\ITenderBot.cs" />
     <Compile Include="Util\MainDialog.cs" />
     <Compile Include="Util\TenderBot.cs" />
+    <Compile Include="Util\TenderReportDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
