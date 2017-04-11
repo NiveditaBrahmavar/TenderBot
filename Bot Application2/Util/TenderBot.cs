@@ -342,7 +342,7 @@ namespace Bot_Application.Util
                     if (DateTime.TryParse(startDate, out startDateTime))
                     {
                         DataTable tblFiltered = dt.AsEnumerable()
-                       .Where(row => row.Field<DateTime>("LastModified").ToShortDateString() == startDateTime.ToShortDateString())
+                       .Where(row => row.Field<DateTime>("LastModified") >= startDateTime)
                        .CopyToDataTable();
                         bytes = Encoding.UTF8.GetBytes(DataMapper(tblFiltered));
                     }

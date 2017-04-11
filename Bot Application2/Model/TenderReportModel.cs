@@ -51,7 +51,7 @@ namespace Bot_Application2.Model
                         bool issuccess = tenderBot.ExportReportExcel(TenderReportModel.AliasName, TenderReportModel.SubsidiaryName, TenderReportModel.StartDate, TenderReportModel.EndDate, TenderReportModel.SendMail);
                         IMessageActivity reply = context.MakeMessage();
                         if (issuccess)
-                            reply.Text = "Mail sent";
+                            reply.Text = "Mail has been sent to your id:" + TenderReportModel.SendMail;
                         else
                             reply.Text = "Mail not sent";
 

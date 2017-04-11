@@ -1,0 +1,106 @@
+﻿
+@{
+    ViewBag.Title = "Sppech To Text Sample";
+}
+
+<h2>Speech To Text Sample</h2>
+
+<script  type="text/javascript">
+
+    $(document.ready(function () {
+
+        function startButton() {
+
+            showInfo('info_speak_now');
+
+            start_img.src = '//google.com/intl/en/chrome/assets/common/images/content/mic-animate.gif';
+            text encode microphone in the plant
+
+
+            showinfo('info_speak_now')
+
+
+        };
+
+        function showInfo(s) {
+            if (s) {
+                for (var child = info.firstChild; child; child = child.nextSibling) {
+                    if (child.style) {
+                        child.style.display = child.id == s ? 'inline' : 'none';
+                    }
+                }
+                info.style.visibility = 'visible';
+            } else {
+                info.style.visibility = 'hidden';
+            }
+        }
+
+
+
+
+
+
+
+    }))
+
+
+</script>
+
+
+@using (Html.BeginForm())
+{
+    <p id="info_speak_now" style="display:none">
+        Speak now.
+    </p>
+
+    <p id="info_speak_now" style="display:none">
+        Continue to speak as long as the microphone is on.
+    </p>
+
+    <div>
+        <div id="div_start">
+            <button id="start_button" onclick="startButton()" style="display:inline-block;">
+                Click on the microphone before speaking<img alt="Start" id="start_img"src="//google.com/intl/en/chrome/assets/common/images/content/mic.gif">
+            </button>
+        </div>
+    </div>
+
+
+
+
+<div>
+    <input type="button" value="Start Recording" onclick="location.href='@Url.Action("StartSpeechRecording", "Speech")'"/>
+</div>
+<br/>
+<br/>
+<p>@ViewBag.SpeechData </p>
+
+<div>
+    <table border="1" width="100%" height="80%">
+        <tr>
+            <td>
+                @if (ViewBag.StartSpeaking != null)
+                {
+                    <p>@ViewBag.StartSpeaking</p>
+                }
+
+                <br />
+
+
+                **********************************************************
+                @if (ViewBag.PartialData != null)
+                {
+                    <p>@ViewBag.PartialData</p>
+                }
+                *************************************************
+                <br />
+
+                   <p>@ViewBag.SpeechData </p>
+                
+                
+
+            </td>
+        </tr>
+    </table>
+</div>
+}
